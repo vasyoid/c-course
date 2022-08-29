@@ -12,12 +12,25 @@ typedef struct {
 	char number[13];
 } Contact;
 
-void read_contacts_from_file(Contact **contacts, int *len) {
+int read_contacts_from_file(Contact **contacts, int *len) {
 	FILE* input = fopen(FILE_NAME, "rb");
-	fread(len, sizeof(*len), 1, input);
+	if (input == NULL) {
+		FILE* new_file = fopen(FILE_NAME, "wb");
+		fclose(new_file);
+		input = fopen(FILE_NAME, "rb");
+	}
+	if (fread(len, sizeof(*len), 1, input) == 0) {
+		*len = 0;
+	}
 	*contacts = malloc(sizeof(Contact) * *len);
-	fread(*contacts, sizeof(Contact), *len, input);
+	if (*len != 0 && contacts == NULL) {
+		return 1;
+	}
+	if (fread(*contacts, sizeof(Contact), *len, input) < *len) {
+		return 2;
+	}
 	fclose(input);
+	return 0;
 }
 
 void write_contacts_to_file(const Contact *contacts, int len) {
@@ -30,7 +43,19 @@ void write_contacts_to_file(const Contact *contacts, int len) {
 int main() {
 	Contact *contacts;
 	int len;
-	read_contacts_from_file(&contacts, &len);
+	int read_result = read_contacts_from_file(&contacts, &len);
+
+	switch (read_result) {
+	case 1:
+		printf("Not enough memory\n");
+		return 1;
+	case 2:
+		printf("File corrupted\n");
+		return 2;
+	default:
+		printf("File read successfully\n");
+	}
+
 
 	for (int i = 0; i < 2; i++) {
 		printf("%s: %s\n", contacts[i].name, contacts[i].number);
