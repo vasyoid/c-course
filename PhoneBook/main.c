@@ -40,6 +40,27 @@ void write_contacts_to_file(const Contact *contacts, int len) {
 	fclose(output);
 }
 
+void list(const Contact *contacts, int len) {
+	for (int i = 0; i < len; i++) {
+		printf("#################\n");
+		printf("name: %s\n", contacts[i].name);
+		printf("number: %s\n", contacts[i].number);
+	}
+}
+
+bool add(Contact** contacts, int *len) {
+	Contact *new_contacts = realloc(*contacts, (*len) + 1);
+	if (new_contacts == NULL) {
+		return false;
+	}
+	*contacts = new_contacts;
+	printf("Input name:\n");
+	scanf("%s", (*contacts)[*len].name);
+	printf("Input number:\n");
+	scanf("%s", (*contacts)[*len].number);
+	(*len)++;
+}
+
 int main() {
 	Contact *contacts;
 	int len;
@@ -56,24 +77,25 @@ int main() {
 		printf("File read successfully\n");
 	}
 
+	printf("You have %i contacts\n", len);
 
-	for (int i = 0; i < 2; i++) {
-		printf("%s: %s\n", contacts[i].name, contacts[i].number);
+	while (true) {
+		char command[11];
+		if (scanf("%10s", command) != 1) {
+			printf("Something went wrong\n");
+			continue;
+		}
+		if (strcmp(command, "add") == 0) {
+			add(&contacts, &len);
+		} else if (strcmp(command, "list") == 0) {
+			list(contacts, len);
+		} else if (strcmp(command, "exit") == 0) {
+			break;
+		} else {
+			printf("Incorrect command\n");
+		}
 	}
-
-//	Contact contacts[2];
-//	strcpy(contacts[0].name, "Vasya");
-//	strcpy(contacts[0].number, "+79991234567");
-//	strcpy(contacts[1].name, "Kolya");
-//	strcpy(contacts[1].number, "+70001234567");
-//	write_contacts_to_file(contacts, 2);
-
-// read_contacts_from_file();
-//	while (true) {
-		// scanf("%s", ...);
-		// if (add) { }
-		// else if (list) { }
-		// else if (exit) { }
-//	}
+	write_contacts_to_file(contacts, len);
+	free(contacts);
 	return 0;
 }
